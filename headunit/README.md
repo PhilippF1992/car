@@ -3,8 +3,16 @@
 * [Raspberry pi 4 8gb](https://amzn.eu/d/0oIf1Fr)
   * [Buckconverter](https://amzn.eu/d/8qV0JrC)
   * [128Gb SD Card](https://amzn.eu/d/2Dl5bnE)
-* Relais
-* PCB for Tempsensors
+* [RS485 Modbus Relays](https://amzn.eu/d/8nXaCZ0)
+* [RS485 HAT](https://amzn.eu/d/72dqG40)
+* PCB (TempSensors/Dimm Leds)
+  * [Mosfets](https://www.infineon.com/cms/de/product/power/mosfet/n-channel/irlb8721/) (to dimm Leds/Fans)
+    * 1k Ohm Resistors
+  * 4,7k Ohm Resistors (DS18B20)
+  * Screw Terminals (to connect sensors & Leds/Fans + 12V Power)
+  * RPI Pin Headers (to connect as Hat)
+  * [ADS1115](https://amzn.eu/d/c3uFTyn)
+  
 
 # Setup
 
@@ -66,5 +74,4 @@ sudo bash -c "echo 'dtoverlay=w1-gpio,gpiopin=3' >> /boot/config.txt"
 ```
 
 # Resources
-
 [Multiple DS18B20](https://www.hackster.io/vinayyn/multiple-ds18b20-temp-sensors-interfacing-with-raspberry-pi-d8a6b0)
