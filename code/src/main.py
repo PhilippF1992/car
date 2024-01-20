@@ -4,7 +4,6 @@ import systemd.daemon
 import paho.mqtt.client as mqtt
 from classes.device import *
 from classes.watersystem import *
-from classes.sensors import *
 
 parser = argparse.ArgumentParser(description='Controll your Car via MQTT and HA')
 parser.add_argument('-mqttuser', dest='mqtt_user', type=str, default="mqtt",
@@ -17,18 +16,18 @@ parser.add_argument('-mqttport', dest='mqtt_port', type=int, default=1883,
                     help="MQTT Port (Default: 1883)")
 parser.add_argument('-connect_on', dest='connect_on', type=any, default=GPIO.LOW,
                     help="Connect on (Default: GPIO.HIGH)")
-parser.add_argument('-gp', dest='gpio_pump', type=int, default=11,
+parser.add_argument('-wsgp', dest='gpio_pump', type=int, default=11,
                     help="GPIO pin ump switch Closed(Default: 11)")
-parser.add_argument('-gb', dest='gpio_boiler', type=int, default=12,
+parser.add_argument('-wsgb', dest='gpio_boiler', type=int, default=12,
                     help="GPIO pin boiler switch Closed(Default: 12)")
-parser.add_argument('-gfwl', dest='gpio_fresh_water_level', type=int, default=13,
-                    help="GPIO pin freshwater level Closed(Default: 13)")
-parser.add_argument('-gfwt', dest='fresh_water_temp_ds18b20_count', type=int, default=0,
-                    help="GPIO pin freshwater temperature ds18b20 count(Default: 0)")
-parser.add_argument('-gfwl', dest='gpio_waste_water_level', type=int, default=14,
-                    help="GPIO pin wastewater level Closed(Default: 14)")
-parser.add_argument('-gfwt', dest='waste_water_temp_ds18b20_count', type=int, default=1,
-                    help="GPIO pin wastewater temperature ds18b20 count(Default: 2)")
+parser.add_argument('-wsafwl', dest='ads_fresh_water_level_pin', type=int, default=0,
+                    help="ADS pin freshwater level Closed(Default: 0)")
+parser.add_argument('-wsfwt', dest='fresh_water_temp_ds18b20_count', type=int, default=0,
+                    help="freshwater temperature ds18b20 count(Default: 0)")
+parser.add_argument('-wsawwl', dest='ads_waste_water_level_pin', type=int, default=1,
+                    help="ADS pin wastewater level Closed(Default: 1)")
+parser.add_argument('-wswwt', dest='waste_water_temp_ds18b20_count', type=int, default=1,
+                    help="wastewater temperature ds18b20 count(Default: 2)")
 args = parser.parse_args()
 
 GPIO.setmode (GPIO.BCM)
@@ -39,7 +38,7 @@ client = mqtt.Client()
 client.username_pw_set(args.mqtt_user, args.mqtt_password)
 
 device_watersystem = Device(["Watersystem"], "watersystem", "v1", "rpi", "me")
-watersystem = Watersystem("Watersystem", device_watersystem, client, args.gpio_pump, args.gpio_boiler, args.gpio_fresh_water_level, args.fresh_water_temp_ds18b20_count, args.gpio_waste_water_level, args.water_water_temp_ds18b20_count, args.connect_on)
+watersystem = Watersystem("Watersystem", device_watersystem, client, args.gpio_pump, args.gpio_boiler, args.ads_fresh_water_level_pin, args.fresh_water_temp_ds18b20_count, args.gpio_waste_water_level, args.ads_waste_water_level_pin, args.connect_on)
 device_electric = Device(["Electric"], "electric", "v1", "rpi", "me")
 device_gas = Device(["Gas"], "gas", "v1", "rpi", "me")
 device_heating = Device(["Heating"], "heating", "v1", "rpi", "me")
