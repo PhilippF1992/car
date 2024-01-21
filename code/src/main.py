@@ -3,71 +3,106 @@ import argparse
 import systemd.daemon
 import paho.mqtt.client as mqtt
 from classes.device import *
-from classes.watersystem import *
+from classes.switches.gpio_switch import *
+from classes.switches.gpio_dimm import *
+from classes.sensors.ds18b20 import *
+from classes.sensors.ads1115 import *
+from classes.sensors.gpio_input import *
+from configparser import ConfigParser
 
-parser = argparse.ArgumentParser(description='Controll your Car via MQTT and HA')
-parser.add_argument('-mqttuser', dest='mqtt_user', type=str, default="hass",
-                    help="MQTT Username (Default: hass)")
-parser.add_argument('-mqttpw', dest='mqtt_password', type=str, default="",
-                    help="MQTT Password (Default: no pw)")
-parser.add_argument('-mqtthost', dest='mqtt_host', type=str, default="homeassistant.local",
-                    help="MQTT Host (Default: homeassistant.local)")
-parser.add_argument('-mqttport', dest='mqtt_port', type=int, default=1883,
-                    help="MQTT Port (Default: 1883)")
-parser.add_argument('-connect_on', dest='connect_on', type=any, default=GPIO.LOW,
-                    help="Connect on (Default: GPIO.HIGH)")
-parser.add_argument('-wsgp', dest='gpio_pump', type=int, default=11,
-                    help="GPIO pin ump switch(Default: 11)")
-parser.add_argument('-wsgb', dest='gpio_boiler', type=int, default=12,
-                    help="GPIO pin boiler switch(Default: 12)")
-parser.add_argument('-wsgfwev', dest='gpio_fresh_water_exit_valve', type=int, default=13,
-                    help="GPIO pin freshwater exit Valve(Default: 13)")
-parser.add_argument('-wsafwl', dest='ads_fresh_water_level_pin', type=int, default=0,
-                    help="ADS pin freshwater level(Default: 0)")
-parser.add_argument('-wsfwt', dest='fresh_water_temp_ds18b20_count', type=int, default=0,
-                    help="freshwater temperature ds18b20 count(Default: 0)")
-parser.add_argument('-wsgwwev', dest='gpio_waste_water_exit_valve', type=int, default=14,
-                    help="GPIO pin wastewater exit Valve(Default: 14)")
-parser.add_argument('-wsawwl', dest='ads_waste_water_level_pin', type=int, default=1,
-                    help="ADS pin wastewater level(Default: 1)")
-parser.add_argument('-wswwt', dest='waste_water_temp_ds18b20_count', type=int, default=1,
-                    help="wastewater temperature ds18b20 count(Default: 2)")
+#Read config.ini file
+config_object = ConfigParser()
+config_object.read("config/config.ini")
 
-args = parser.parse_args()
+if config_object.sections()==[]:
+    print("Configurations not found!")
+    print("Please run 'python configure.py' and restart")
+else:    
+    pin_config_object=ConfigParser()
+    pin_config_object.read('config/pin_config.ini')
+    #GPIO setup
+    GPIO.setmode (GPIO.BCM)
+    GPIO.setwarnings(False)
+    #Basic setup mqtt-client & device
+    client = mqtt.Client()
+    client.username_pw_set(config_object['mqtt']['user'], config_object["mqtt"]["password"])
+    device = Device([config_object['base']['name']], config_object['base']['name'].trim().replace(' ','_'), "v1", "rpi", "me")
+    
+    #Create configured objects
+    #relays
+    relays=[]
+    if ('relays' in config_object.sections):
+        for (key, value) in config_object.items('relays'):
+            name = value
+            uniq_id = value.trim().replace(' ','_')
+            pin = pin_config_object["relays"][key]
+            connect_on = pin_config_object["relays"]["connect_on"]
+            relay = GPIO_Switch(name, uniq_id, device, client, pin, connect_on)
+            relays.append(relay)
 
-GPIO.setmode (GPIO.BCM)
-GPIO.setwarnings(False)
+    #dimmers
+    dimmers=[]
+    if ('dimmers' in config_object.sections()):
+        for (key, value) in config_object('dimmers'):
+            name = value
+            uniq_id = value.trim().replace(' ','_')
+            pin = pin_config_object["dimmers"][key]
+            dimmer = GPIO_DIMM(name, uniq_id, device, client, pin)
+            dimmers.append(dimmer)
+
+    #ds18b20
+    ds18b20s=[]
+    if ('ds18b20s' in config_object.sections()):
+        for (key, value) in config_object('ds18b20'):
+            name = value
+            uniq_id = value.trim().replace(' ','_')
+            one_wire_count = 0
+            ds18b20 = DS18B20(name, uniq_id, device, client, one_wire_count)
+            ds18b20s.append(ds18b20)
+
+    #gpio_input
+    gpio_inputs=[]
+    if ('gpio_input' in config_object.sections()):
+        for (key, value) in config_object('gpio_input'):
+            name = value
+            uniq_id = value.trim().replace(' ','_')
+            pin = pin_config_object["gpio_input"][key]
+            gpio_input = GPIO_Input(name, uniq_id, device, client, pin)
+            gpio_inputs.append(gpio_input)
 
 
-client = mqtt.Client()
-client.username_pw_set(args.mqtt_user, args.mqtt_password)
+    #handle messages received via mqtt
+    def on_message(client, userdata, message):
+        for relay in relays:
+            relay.on_message(message)
+        for dimmer in dimmers:
+            dimmer.on_message(message)
 
-device_watersystem = Device(["Watersystem"], "watersystem", "v1", "rpi", "me")
-watersystem = Watersystem("Watersystem", device_watersystem, client, args)
-device_electric = Device(["Electric"], "electric", "v1", "rpi", "me")
-device_gas = Device(["Gas"], "gas", "v1", "rpi", "me")
-device_heating = Device(["Heating"], "heating", "v1", "rpi", "me")
-connected = False
-def on_message(client, userdata, message):
-    watersystem.on_message(message)
-
-def on_connect(client, userdata, flags, rc):
-    watersystem.subscribe()
-    connected = True
-
-def on_disconnect(client, userdata, rc):
+    #handle connection
     connected = False
+    def on_connect(client, userdata, flags, rc):
+        for relay in relays:
+            relay.subscribe()
+        for dimmer in dimmers:
+            dimmer.subscribe()
+        connected = True
 
-client.on_message = on_message
-client.on_connect = on_connect
-client.on_disconnect = on_disconnect
+    def on_disconnect(client, userdata, rc):
+        connected = False
 
-client.connect(args.mqtt_host, args.mqtt_port)
-client.loop_start()
-systemd.daemon.notify('READY=1')
-while True:
-    watersystem.send_data()
-    time.sleep(2)
+    client.on_message = on_message
+    client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
+
+    client.connect(config_object['mqtt']["host"], config_object['mqtt']["port"])
+    client.loop_start()
+    systemd.daemon.notify('READY=1')
+    while True:
+        for ds18b20 in ds18b20s:
+            ds18b20.send_data()
+        for gpio_input in gpio_inputs:
+            gpio_input.send_data()
+        time.sleep(2)
 
 
 
