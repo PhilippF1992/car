@@ -4,17 +4,14 @@ import paho.mqtt.client as mqtt
 from ..device import *
 
 class GPIO_Switch:
-    def __init__(self, name, uniq_id, device: Device, client: mqtt.Client, pin, connect_on, parent= ""):
+    def __init__(self, name, uniq_id, device: Device, client: mqtt.Client, pin, connect_on):
         self.name = name
         self.device = device
         self.client = client
         self.uniq_id = uniq_id
         self.pin = pin
         self.connect_on = connect_on
-        if (parent == ""):
-            self.topic = "homeassistant/switch/" + self.device.name + "/" + self.uniq_id
-        else: 
-            self.topic = "homeassistant/switch/" + self.device.name + "_" + parent + "/" + self.uniq_id
+        self.topic = "homeassistant/switch/" + self.device.name + "/" + self.uniq_id
         if (GPIO.HIGH == connect_on):
             self.disconnect_on = GPIO.LOW
         else:
@@ -56,11 +53,11 @@ class GPIO_Switch:
     def subscribe(self):
         self.client.subscribe(self.topic + "/set")
 
-    def on_message(self, client, userdata, message):
+    def on_message(self, message):
         if (message.topic == self.topic + "/set"):
             payload=str(message.payload.decode("utf-8"))
             if (payload == "True"):
-                self.set_on
+                self.set_on()
             else: 
-                self.set_off
+                self.set_off()
 

@@ -6,30 +6,27 @@ from .sensors.ads1115 import *
 import paho.mqtt.client as mqtt
 
 class Watersystem:
-    def __init__(self, uniq_id, device: Device, client: mqtt.Client, gpio_pump, gpio_boiler, ads_fresh_water_level_pin, fresh_water_temp_ds18b20_count, ads_waste_water_level_pin, waste_water_temp_ds18b20_count, connect_on):
+    def __init__(self, uniq_id, device: Device, client: mqtt.Client, args):
         self.uniq_id = uniq_id
-        self.pump = GPIO_Switch("Pump", "pump", device, client, gpio_pump, connect_on, uniq_id)
-        self.boiler = GPIO_Switch("Boiler", "boiler", device, client, gpio_boiler, connect_on, uniq_id)
-        self.fresh_water_level = ADS1115("Freshwater Level", "fresh_water_level", device, client, ads_fresh_water_level_pin)
-        self.fresh_water_temp = DS18B20("Freshwater Temperature", "freshwater_temperature", device, client, fresh_water_temp_ds18b20_count)
-        self.waste_water_level = ADS1115("Freshwater Level", "fresh_water_level", device, client, ads_waste_water_level_pin)
-        self.waste_water_temp = DS18B20("Wastewater Temperature", "wastewater_temperature", device, client, waste_water_temp_ds18b20_count)
+        self.pump = GPIO_Switch("Pump", "pump", device, client, args.gpio_pump, args.connect_on, uniq_id)
+        self.boiler = GPIO_Switch("Boiler", "boiler", device, client, args.gpio_boiler, args.connect_on, uniq_id)
+        self.fresh_water_exit_valve = GPIO_Switch("Freshwater Exit Valve", "fresh_water_exit_valve", device, client, args.gpio_fresh_water_exit_valve, args.connect_on, uniq_id)
+        self.fresh_water_level = ADS1115("Freshwater Level", "fresh_water_level", device, client, args.ads_fresh_water_level_pin)
+        self.fresh_water_temp = DS18B20("Freshwater Temperature", "freshwater_temperature", device, client, args.fresh_water_temp_ds18b20_count)
+        self.waste_water_exit_valve = GPIO_Switch("Wastehwater Exit Valve", "waste_water_exit_valve", device, client, args.gpio_waste_water_exit_valve, args.connect_on, uniq_id)
+        self.waste_water_level = ADS1115("Wastewater Level", "waste_water_level", device, client, args.ads_waste_water_level_pin)
+        self.waste_water_temp = DS18B20("Wastewater Temperature", "wastewater_temperature", device, client, args.waste_water_temp_ds18b20_count)
 
+    def send_data(self):
+        self.fresh_water_level.send_data()
+        self.fresh_water_temp.send_data()
+        self.waste_water_level.send_data()
+        self.waste_water_temp.send_data()
 
     def subscribe(self):
         self.pump.subscribe()
         self.boiler.subscribe()
 
     def on_message(self, message):
-        payload=str(message.payload.decode("utf-8"))
-        if (self.pump.uniq_id in message.topic):
-            if (payload=="True"):
-                self.pump.set_on()
-            else:
-                self.pump.set_off()
-                self.boiler.set_off()
-        if (self.boiler.uniq_id in message.topic):
-            if (payload=="True"):
-                self.boiler.set_on()
-            else:
-                self.boiler.set_off()
+        self.pump.on_message(message)
+        self.boiler.on_message(message)
