@@ -84,3 +84,5 @@ change the opened filed to match your settings, like your mqtt pw
 
 # Resources
 [Multiple DS18B20](https://www.hackster.io/vinayyn/multiple-ds18b20-temp-sensors-interfacing-with-raspberry-pi-d8a6b0)
+
+[Victron Technical Documentation](https://www.victronenergy.com/support-and-downloads/technical-information)
