@@ -4,7 +4,7 @@ import paho.mqtt.client as mqtt
 from ..device import *
 
 class GPIO_Input():
-    def __init__(self, name, uniq_id, device: Device, client: mqtt.Client, pin,):
+    def __init__(self, name, uniq_id, device: Device, client: mqtt.Client, pin):
         self.name = name
         self.device = device
         self.client = client

@@ -50,7 +50,7 @@ def configure_dimmers():
     print('dimmers are configured!')
 
 def configure_ds18b20s():
-    print('These questions will configure the ds18b20:')
+    print('These questions will configure the ds18b20 temperature sensors:')
     config_object['ds18b20s']={}
     number_gpio_inputs=int(input('How many ds18b20s did you connect?:\n'))
     for i in range(0, number_gpio_inputs):
