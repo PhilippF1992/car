@@ -9,6 +9,7 @@ from classes.sensors.ds18b20 import *
 from classes.sensors.ads1115 import *
 from classes.sensors.gpio_input import *
 from classes.sensors.victron_smart_shunt import *
+from classes.sensors.victron_mppt import *
 from configparser import ConfigParser
 
 #Read config.ini file
@@ -27,6 +28,8 @@ else:
     #Basic setup mqtt-client & device
     client = mqtt.Client()
     client.username_pw_set(config_object['mqtt']['user'], config_object["mqtt"]["password"])
+    
+    #Basic setup Device for HA
     device = Device([config_object['base']['name']], config_object['base']['name'].strip().replace(' ','_'), "v1", "rpi", "me")
     
     #Create configured objects
@@ -71,8 +74,10 @@ else:
             gpio_input = GPIO_Input(name, uniq_id, device, client, pin)
             gpio_inputs.append(gpio_input)
     
-    victron_smart_shunt = SmartShunt('smart_shunt', 'smart_shunt', device, client, '/dev/ttyUSB0')
-
+    victron_smart_shunt_device = Device('Victron Smart Shunt', 'victron_smart_shunt', 1, 'rpi', 'me')
+    victron_smart_shunt = SmartShunt('smart_shunt', 'smart_shunt', victron_smart_shunt_device, client, '/dev/ttyUSB0')
+    victron_mppt_device = Device('Victron Mppt 100/45', 'victron_mppt_100_45', 1, 'rpi', 'me')
+    victron_mppt = Mppt('mppt', 'mppt', victron_mppt_device, client, '/dev/ttyUSB1')
     #handle messages received via mqtt
     def on_message(client, userdata, message):
         for relay in relays:
@@ -89,7 +94,12 @@ else:
         for dimmer in dimmers:
             dimmer.subscribe()
             dimmer.send_config
+        for ds18b20 in ds18b20s:
+            ds18b20.send_config()
+        for gpio_input in gpio_inputs:
+            gpio_input.send_config()
         victron_smart_shunt.send_config()
+        victron_mppt.send_config()
         connected = True
 
     def on_disconnect(client, userdata, rc):
@@ -108,6 +118,7 @@ else:
         for gpio_input in gpio_inputs:
             gpio_input.send_data()
         victron_smart_shunt.send_data()
+        victron_mppt.send_data()
         time.sleep(2)
 
 
