@@ -6,3 +6,6 @@
 
 ## Code copied from others:
 [VE.Direct to Python Repo by karioja](https://github.com/karioja/vedirect)
+
+## Resources:
+[Victron Technical Documentation](https://www.victronenergy.com/support-and-downloads/technical-information)
