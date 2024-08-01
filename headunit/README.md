@@ -2,8 +2,6 @@
 
 * [Raspberry pi 4 8gb](https://amzn.eu/d/0oIf1Fr)
   * [128Gb SD Card](https://amzn.eu/d/2Dl5bnE)
-* [RS485 Modbus Relays](https://amzn.eu/d/8nXaCZ0)
-* [RS485 HAT](https://amzn.eu/d/72dqG40)
 * PCB (TempSensors/Dimm Leds)
   * [Mosfets](https://www.infineon.com/cms/de/product/power/mosfet/n-channel/irlb8721/) (to dimm Leds/Fans)
     * 1k Ohm Resistors
@@ -89,7 +87,7 @@ docker run -d \
     -v /home/$USER/docker-volumes/home-assistant:/config \
     --network=host \
     homeassistant/home-assistant:stable
-nano /root/docker-volumes/home-assistant/configuration.yaml
+nano /home/$USER/docker-volumes/home-assistant/configuration.yaml
 ```
 
 write to add trusted proxies
