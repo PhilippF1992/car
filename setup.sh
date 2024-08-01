@@ -20,5 +20,3 @@ sudo chown root:root /usr/local/lib/car/code/src/main.py
 sudo chmod 644 /usr/local/lib/car/code/src/main.py
 
 sudo cp /usr/local/lib/car/code/service/python_car.service /etc/systemd/system/python_car.service 
-
-sudo nano /etc/systemd/system/python_car.service 
