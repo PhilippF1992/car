@@ -21,7 +21,7 @@ Controlling different devices inside a camping van via the raspberry pi and publ
   * [Autoterm 4D](https://www.tigerexped.de/standheizung-camper-komplettset-4kw)
 * Water:
   see [README watersystem](/watersystem/README.md)
-* Router(OpenWRT):
+* Router(GL-AR300M-Ext):
   see [README router](/router/README.md)
 
 ## Tools
