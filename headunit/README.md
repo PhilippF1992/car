@@ -21,6 +21,13 @@ connect via SSH:
 ssh user@car
 ```
 
+Run scrupt directly 
+```sh
+wget -O - https://raw.githubusercontent.com/PhilippF1992/car/main/headunit/setup.sh | bash
+```
+
+or follow the steps below:
+
 ```sh
 sudo apt update
 sudo apt upgrade -y

@@ -1,5 +1,4 @@
 import time
-import argparse
 import systemd.daemon
 import paho.mqtt.client as mqtt
 from classes.device import *
@@ -74,10 +73,10 @@ else:
             gpio_input = GPIO_Input(name, uniq_id, device, client, pin)
             gpio_inputs.append(gpio_input)
     
-    victron_smart_shunt_device = Device('Victron Smart Shunt', 'victron_smart_shunt', 1, 'rpi', 'me')
-    victron_smart_shunt = SmartShunt('smart_shunt', 'smart_shunt', victron_smart_shunt_device, client, '/dev/ttyUSB0')
-    victron_mppt_device = Device('Victron Mppt 100/45', 'victron_mppt_100_45', 1, 'rpi', 'me')
-    victron_mppt = Mppt('mppt', 'mppt', victron_mppt_device, client, '/dev/ttyUSB1')
+    #victron_smart_shunt_device = Device('Victron Smart Shunt', 'victron_smart_shunt', 1, 'rpi', 'me')
+    #victron_smart_shunt = SmartShunt('smart_shunt', 'smart_shunt', victron_smart_shunt_device, client, '/dev/ttyUSB0')
+    #victron_mppt_device = Device('Victron Mppt 100/45', 'victron_mppt_100_45', 1, 'rpi', 'me')
+    #victron_mppt = Mppt('mppt', 'mppt', victron_mppt_device, client, '/dev/ttyUSB1')
     #handle messages received via mqtt
     def on_message(client, userdata, message):
         for relay in relays:
@@ -117,8 +116,8 @@ else:
             ds18b20.send_data()
         for gpio_input in gpio_inputs:
             gpio_input.send_data()
-        victron_smart_shunt.send_data()
-        victron_mppt.send_data()
+        #victron_smart_shunt.send_data()
+        #victron_mppt.send_data()
         time.sleep(2)
 
 

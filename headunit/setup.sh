@@ -114,12 +114,16 @@ sudo apt install python3-pip -y
 sudo apt install python3-systemd -y 
 sudo apt install python3-paho-mqtt -y
 sudo apt install python3-serial -y
+sudo apt install python3-smbus2 i2c-tools -y
 pip3 install ADS1x15-ADC --break-system-packages
 
 sudo useradd -r -s /bin/false python_car
 sudo adduser python_car gpio
 
-sudo bash -c  "echo -en 'dtoverlay=w1-gpio,gpiopin=3' >> /boot/firmware/config.txt"
+sudo bash -c  "echo -en 'dtoverlay=w1-gpio,gpiopin=4' >> /boot/firmware/config.txt"
 echo 'Installing Python and Libraries: Done'
+
+sudo apt install git -y
+git clone https://github.com/PhilippF1992/car.git
 
 sudo reboot
