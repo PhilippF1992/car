@@ -116,14 +116,24 @@ sudo apt install python3-paho-mqtt -y
 sudo apt install python3-serial -y
 sudo apt install python3-smbus2 i2c-tools -y
 pip3 install ADS1x15-ADC --break-system-packages
-
-sudo useradd -r -s /bin/false python_car
-sudo adduser python_car gpio
-
-sudo bash -c  "echo -en 'dtoverlay=w1-gpio,gpiopin=4' >> /boot/firmware/config.txt"
+pip3 install rpi-hardware-pwm --break-system-packages
 echo 'Installing Python and Libraries: Done'
 
+echo 'Setup Service User: Start'
+sudo useradd -r -s /bin/false python_car
+sudo adduser python_car gpio
+echo 'Setup Service User: Done'
+
+echo 'Setup dtoverlays: Start'
+sudo bash -c  "echo -en 'dtoverlay=w1-gpio,gpiopin=4' >> /boot/firmware/config.txt"
+sudo bash -c  "echo -en 'dtoverlay=pwm-2chan' >> /boot/firmware/config.txt"
+echo 'Setup dtoverlays: Done'
+
+echo 'Setup dtoverlays: Start'
 sudo apt install git -y
 git clone https://github.com/PhilippF1992/car.git
+echo 'Setup dtoverlays: Done'
 
+##TODO Configure.py
+echo 'Reboot'
 sudo reboot
