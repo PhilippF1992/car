@@ -1,11 +1,12 @@
-from mcp23017 import *
-from i2c import I2C
-import smbus
+import board
+import busio
+import digitalio
 
-import RPi.GPIO as GPIO
-GPIO.setmode(GPIO.BCM)
-i2c = I2C(smbus.SMBus(1))  # creates a I2C Object as a wrapper for the SMBus
-mcp = MCP23017(0x21, i2c)   # creates an MCP object with the given address
+from adafruit_mcp230xx.mcp23017 import MCP23017
+i2c = busio.I2C(board.SCL, board.SDA)
+mcp = MCP23017(i2c, 0x20)
 
-mcp.pin_mode(GPB0, INPUT)
-print(mcp.digital_read(GPB0))
+pin0 = mcp.get_pin(0)
+pin0.direction = digitalio.Direction.INPUT
+
+print(pin0.value)

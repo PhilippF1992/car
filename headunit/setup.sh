@@ -109,14 +109,16 @@ echo 'Installing Mosquitto: Done'
 
 #install python and setup permissions
 echo 'Installing Python and Libraries: Start'
-sudo apt install python3-rpi.gpio -y
 sudo apt install python3-pip -y
 sudo apt install python3-systemd -y 
 sudo apt install python3-paho-mqtt -y
 sudo apt install python3-serial -y
-sudo apt install python3-smbus2 i2c-tools -y
-pip3 install ADS1x15-ADC --break-system-packages
-pip3 install rpi-hardware-pwm --break-system-packages
+sudo apt install i2c-tools -y
+python -m venv .env
+source .env/bin/activate
+pip3 install Adafruit-Blinka
+pip3 install adafruit-circuitpython-mcp230xx
+pip3 install adafruit-circuitpython-ads1x15
 echo 'Installing Python and Libraries: Done'
 
 echo 'Setup Service User: Start'

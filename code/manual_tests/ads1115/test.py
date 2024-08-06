@@ -1,26 +1,15 @@
-import ADS1x15
 import time
-ADS = ADS1x15.ADS1115(1, 0x48)
+import board
+import busio
+import adafruit_ads1x15.ads1115 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
 
-ADS.setMode(ADS.MODE_SINGLE)    # SINGLE SHOT MODE
-ADS.setGain(1)
+i2c = busio.I2C(board.SCL, board.SDA)
+ads = ADS.ADS1115(i2c, address=0x48)
+ads.gain = 1
+chan = AnalogIn(ads, ADS.P1)
+print("{:>5}\t{:>5}".format("raw", "v"))
 
-#ADS.requestADC(0)
-value = ADS.readADC(0)
-value = ADS.readADC(0) #read twice to get correct data
-print('1: ' + str(ADS.toVoltage(value)))
-#time.sleep(0.5)
-#ADS.requestADC(1)
-value = ADS.readADC(1)
-value = ADS.readADC(1)
-print('2: ' + str(ADS.toVoltage(value)))
-#time.sleep(0.5)
-#ADS.requestADC(2)
-value = ADS.readADC(2)
-value = ADS.readADC(2)
-print('3: ' + str(ADS.toVoltage(value)))
-#time.sleep(0.5)
-#ADS.requestADC(3)
-value = ADS.readADC(3)
-value = ADS.readADC(3)
-print('4: ' + str(ADS.toVoltage(value)))
+while True:
+    print("{:>5}\t{:>5.3f}".format(chan.value, chan.voltage))
+    time.sleep(0.5)
