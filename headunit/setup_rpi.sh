@@ -112,26 +112,31 @@ echo 'Installing Mosquitto: Done'
 #install python and setup permissions
 echo 'Installing Python and Libraries: Start'
 sudo apt install python3-pip -y
-sudo apt install python3-systemd -y 
-sudo apt install python3-paho-mqtt -y
-sudo apt install python3-serial -y
-sudo apt install i2c-tools -y
-python -m venv .env
-source .env/bin/activate
-pip3 install Adafruit-Blinka
-pip3 install adafruit-circuitpython-mcp230xx
-pip3 install adafruit-circuitpython-ads1x15
+sudo apt install libsystemd-dev -y
+sudo apt install python3-virtualenvwrapper -y
+echo 'export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3' >> /home/$USER/.bashrc
+echo 'export VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv' >> /home/$USER/.bashrc
+echo 'source /usr/local/bin/virtualenvwrapper.sh' >> /home/$USER/.bashrc
+mkvirtualenv car
+pip install --upgrade pip
+pip install cysystemd 
+pip install paho-mqtt
+pip install serial
+pip install Adafruit-Blinka
+pip install adafruit-circuitpython-mcp230xx
+pip install adafruit-circuitpython-ads1x15
 echo 'Installing Python and Libraries: Done'
 
 echo 'Setup Service User: Start'
-sudo useradd -r -s /bin/false python_car
-sudo adduser python_car gpio
+sudo useradd -r -s /bin/false python_car -G gpio,i2c,spi
 echo 'Setup Service User: Done'
 
 echo 'Setup Code: Start'
 sudo apt install git -y
 git clone https://github.com/PhilippF1992/car.git
 echo 'Setup Code: Done'
+
+sudo sed -i "s/\/usr\/bin\/python3/\/home\/$USER\/.virtualenvs\/car\/bin\/python/g" /home/$USER/car/code/service/python_car.service
 
 ##TODO Configure.py
 echo 'Reboot'

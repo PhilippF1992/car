@@ -40,34 +40,12 @@ def configure_mcp27013():
         if u_input == 'relays':
             u_input=input(f"On which state does the relay connect? (high/low)\n")
             config_object[f"mcp27013_{i+1}"]['connect_on']=u_input
-        for j in range(0, 16):
-            u_input=input(f"Name the {j+1}. connection of the {i+1}. MCP27013 module:\n")
-            config_object[f"mcp27013_{i+1}"][f"{j+1}"]=u_input
     print('MCP27013`s are configured!')
 
-def configure_dimmers():
-    print('These questions will configure the dimmers:')
-    config_object['dimmers']={}
-    number_dimmers=int(input('How many dimmers did you connect?:\n'))
-    for i in range(0, number_dimmers):
-        u_input=input(f"Name the {i+1}. dimmer:\n")
-        config_object['dimmers'][f"dimmer_{i+1}"]=u_input
-    print('dimmers are configured!')
-
-def configure_ds18b20s():
-    print('These questions will configure the ds18b20 temperature sensors:')
-    config_object['ds18b20s']={}
-    number_gpio_inputs=int(input('How many ds18b20s did you connect?:\n'))
-    for i in range(0, number_gpio_inputs):
-        u_input=input(f"Name the {i+1}. ds18b20:\n")
-        config_object['ds18b20s'][f"ds18b20_{i+1}"]=u_input
-    print('ds18b20s are configured!')
 
 def configure_all():
     configure_mqtt()
     configure_mcp27013()
-    configure_dimmers()
-    configure_ds18b20s()
 
 def first_configuration():
     print('No configs found!')
@@ -81,7 +59,7 @@ def reconfigure():
     print('Configs found!')
     print(f"Welcome back to the configuration of '{config_object['base']['name']}'")
     while True:
-        u_input=input('Which config do you want to rework? (all, mqtt, mcp27013, dimmers, ds18b20s)\n')
+        u_input=input('Which config do you want to rework? (all, mqtt, mcp27013)\n')
         if u_input == 'all':
             configure_all()
             break
@@ -89,10 +67,6 @@ def reconfigure():
             configure_mqtt()
         if u_input == 'mcp27013':
             configure_mcp27013()
-        if u_input == 'dimmers':
-            configure_dimmers()
-        if u_input == 'ds18b20s':
-            configure_ds18b20s()
         u_input = input('Do you want to change more configurations? (Yes/No)\n')
         if u_input == 'No' or u_input == 'n' or u_input == 'no' or u_input == 'N':
             break

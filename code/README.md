@@ -9,7 +9,6 @@
 
 ## Code copied from others:
 [VE.Direct to Python Repo by karioja](https://github.com/karioja/vedirect)
-[MCP27013 from sensorberg](https://github.com/sensorberg/MCP23017-python) 
 
 ## Resources:
 [Victron Technical Documentation](https://www.victronenergy.com/support-and-downloads/technical-information)
