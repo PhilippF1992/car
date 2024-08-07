@@ -125,6 +125,7 @@ pip install serial
 pip install Adafruit-Blinka
 pip install adafruit-circuitpython-mcp230xx
 pip install adafruit-circuitpython-ads1x15
+pip install adafruit-circuitpython-tlc59711
 echo 'Installing Python and Libraries: Done'
 
 echo 'Setup Service User: Start'

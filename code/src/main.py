@@ -3,7 +3,7 @@ import time
 import paho.mqtt.client as mqtt
 from classes.device import *
 from classes.actors.mcp_relay import *
-from classes.actors.gpio_dimm import *
+from classes.actors.tlc_dim import *
 from classes.sensors.ds18b20 import *
 from classes.sensors.ads1115 import *
 from classes.sensors.mcp_input import *
@@ -21,9 +21,6 @@ if config_object.sections()==[]:
 else:    
     pin_config_object=ConfigParser()
     pin_config_object.read('config/pin_config.ini')
-    #GPIO setup
-    GPIO.setmode (GPIO.BCM)
-    GPIO.setwarnings(False)
     #Basic setup mqtt-client & device
     client = mqtt.Client()
     client.username_pw_set(config_object['mqtt']['user'], config_object["mqtt"]["password"])
@@ -50,37 +47,37 @@ else:
                 input = MCP_Input(name, device, client, address)
                 mcp_inputs.append(input)
 
-
-    #dimmers
-    dimmers=[]
-    if ('dimmers' in config_object.sections()):
-        for (key, value) in config_object('dimmers'):
-            name = value
-            uniq_id = value.strip().replace(' ','_')
-            pin = pin_config_object["dimmers"][key]
-            dimmer = GPIO_DIMM(name, uniq_id, device, client, pin)
-            dimmers.append(dimmer)
+    ads1115s = []
+    if ('ads1115' in config_object.sections()):
+        for i in range(0,int(config_object['ads1115']['number_of_modules'])):
+            ads_config = config_object[f"ads1115_{i+1}"]
+            address = int(ads_config['address'],16)
+            factors = []
+            for j in range(0,4):
+                factor = float(ads_config[f"factor_{j+1}"])
+                factors.append(factor)
+            ads = ADS1115(f"ads1115_{i+1}", device, client, address, factors)
+            ads1115s.append(ads)
 
     #ds18b20
+    one_wire_base_dir = '/sys/bus/w1/devices/'
     ds18b20s=[]
-    if ('ds18b20s' in config_object.sections()):
-        for (key, value) in config_object('ds18b20'):
-            name = value
-            uniq_id = value.strip().replace(' ','_')
-            one_wire_count = 0
-            ds18b20 = DS18B20(name, uniq_id, device, client, one_wire_count)
+    list_ds18b20_folders = glob.glob(one_wire_base_dir + '28*')
+    ds18b20_counter = 0
+    for folder in list_ds18b20_folders:
+            ds18b20_counter += 1
+            ds18b20 = DS18B20(f"ds18b20_{ds18b20_counter}", device, client, folder)
             ds18b20s.append(ds18b20)
     
     #victron_smart_shunt_device = Device('Victron Smart Shunt', 'victron_smart_shunt', 1, 'rpi', 'me')
     #victron_smart_shunt = SmartShunt('smart_shunt', 'smart_shunt', victron_smart_shunt_device, client, '/dev/ttyUSB0')
     #victron_mppt_device = Device('Victron Mppt 100/45', 'victron_mppt_100_45', 1, 'rpi', 'me')
     #victron_mppt = Mppt('mppt', 'mppt', victron_mppt_device, client, '/dev/ttyUSB1')
+    
     #handle messages received via mqtt
     def on_message(client, userdata, message):
         for relay in mcp_relays:
             relay.on_message(message)
-        for dimmer in dimmers:
-            dimmer.on_message(message)
 
     #handle connection
     connected = False
@@ -88,13 +85,12 @@ else:
         for mcp_relay in mcp_relays:
             mcp_relay.send_config()
             mcp_relay.subscribe()
-        for dimmer in dimmers:
-            dimmer.subscribe()
-            dimmer.send_config
         for ds18b20 in ds18b20s:
             ds18b20.send_config()
         for mcp_input in mcp_inputs:
             mcp_input.send_config()
+        for ads in ads1115s:
+            ads.send_config()
         #victron_smart_shunt.send_config()
         #victron_mppt.send_config()
         connected = True
@@ -114,9 +110,11 @@ else:
             ds18b20.send_data()
         for mcp_input in mcp_inputs:
             mcp_input.send_data()
+        for ads in ads1115s:
+            ads.send_data()
         #victron_smart_shunt.send_data()
         #victron_mppt.send_data()
-        time.sleep(2)
+        time.sleep(0.2)
 
 
 

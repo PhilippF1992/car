@@ -1,10 +1,9 @@
 import json
-import RPi.GPIO as GPIO
 import paho.mqtt.client as mqtt
 from ..device import *
 
-class GPIO_DIMM:
-    def __init__(self, name, uniq_id, device: Device, client: mqtt.Client, pin):
+class TLC_Dim:
+    def __init__(self, name, device: Device, client: mqtt.Client, pin):
         self.name = name
         self.device = device
         self.client = client

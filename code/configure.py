@@ -42,10 +42,27 @@ def configure_mcp27013():
             config_object[f"mcp27013_{i+1}"]['connect_on']=u_input
     print('MCP27013`s are configured!')
 
+def configure_ads1115():
+    print('These questions will configure the ADS1115 modules:')
+    for key in list(config_object.keys()):
+        if key.startswith('ads1115'):
+            del config_object[key]
+    config_object['ads1115']={}
+    number_of_modules=int(input('How many ADS1115 modules did you connect?\n'))
+    config_object['ads1115']['number_of_modules'] = str(number_of_modules)
+    for i in range(0, number_of_modules):
+        config_object[f"ads1115_{i+1}"] = {}
+        u_input=input(f"Which address does the {i+1}. ADS1115 module use?\n")
+        config_object[f"ads1115_{i+1}"]['address']=u_input
+        for j in range(0,4):
+            u_input=input(f"Which factor should be applied to the {j+1} input of the {i+1}. ADS1115 module?\n")
+            config_object[f"ads1115_{i+1}"][f"factor_{j+1}"]=str(u_input)
+    print('ADS1115`s are configured!')
 
 def configure_all():
     configure_mqtt()
     configure_mcp27013()
+    configure_ads1115()
 
 def first_configuration():
     print('No configs found!')
@@ -59,7 +76,7 @@ def reconfigure():
     print('Configs found!')
     print(f"Welcome back to the configuration of '{config_object['base']['name']}'")
     while True:
-        u_input=input('Which config do you want to rework? (all, mqtt, mcp27013)\n')
+        u_input=input('Which config do you want to rework? (all, mqtt, mcp27013, ads1115)\n')
         if u_input == 'all':
             configure_all()
             break
@@ -67,6 +84,8 @@ def reconfigure():
             configure_mqtt()
         if u_input == 'mcp27013':
             configure_mcp27013()
+        if u_input == 'ads1115':
+            configure_ads1115()
         u_input = input('Do you want to change more configurations? (Yes/No)\n')
         if u_input == 'No' or u_input == 'n' or u_input == 'no' or u_input == 'N':
             break

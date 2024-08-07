@@ -1,38 +1,35 @@
 import json
 import glob
-import time
 import paho.mqtt.client as mqtt
 from ..device import *
 
 class DS18B20():
-    def __init__(self, name, uniq_id, device: Device, client: mqtt.Client, onewire_count):
+    def __init__(self, name, device: Device, client: mqtt.Client, folder):
         self.name = name
         self.device = device
         self.client = client
-        self.uniq_id = uniq_id
-        base_dir = '/sys/bus/w1/devices/'
-        device_folder = glob.glob(base_dir + '28*')[onewire_count]
-        device_file = device_folder + '/w1_slave'
-        self.file = device_file
-        self._send_config()
+        self.folder = folder
+        self.file = folder + '/w1_slave'
+        self.base_topic = "homeassistant/sensor/" + self.device.name + "/" + self.name
+        self.send_config()
 
-    def _send_config(self):
+    def send_config(self):
         conf = {
             "name": self.name,
-            "state_topic": "homeassistant/sensor/" + self.device.name + "/" + self.uniq_id + "/state",
+            "state_topic": self.base_topic + "/state",
             "state_class": "measurement",
             "unit_of_measurement": "C",
             "device_class": "temperature",
             "value_template": "{{ value }}",
-            "unique_id": self.uniq_id,
+            "unique_id": self.name,
             "device": self.device,
             "icon": "mdi:thermometer",
             "platform": "mqtt"
         }
-        self.client.publish("homeassistant/sensor/" + self.device.name + "/" + self.uniq_id + "/config",json.dumps(conf), 0, True)
+        self.client.publish(self.base_topic + "/config",json.dumps(conf), 0, True)
     
     def send_data(self):
-        self.client.publish("homeassistant/sensor/" + self.device.name + "/" + self.uniq_id + "/state", str(self._read_data()), 0, False)
+        self.client.publish(self.base_topic +  "/state", str(self._read_data()), 0, False)
 
     def _read_temp_raw(self):
         f = open(self.file, 'r')
@@ -42,9 +39,8 @@ class DS18B20():
 
     def _read_data(self):
         lines = self._read_temp_raw()
-        while lines[0].strip()[-3:] != 'YES':
-            time.sleep(0.2)
-            lines = self._read_temp_raw()
+        if lines[0].strip()[-3:] != 'YES':
+            return 0
         equals_pos = lines[1].find('t=')
         if equals_pos != -1:
             temp_string = lines[1][equals_pos+2:]
